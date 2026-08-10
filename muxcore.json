@@ -1,0 +1,8 @@
+{
+  "id": "media-intro-outro",
+  "name": "Intro / Outro Detection",
+  "version": "0.1.0",
+  "description": "Intro/outro skip segment detection scaffold",
+  "roles": ["media", "analysis"],
+  "capabilities": ["media.intro_outro", "intro_outro", "settings"]
+}

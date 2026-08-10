@@ -1,0 +1,63 @@
+syntax = "proto3";
+
+package muxcore.introoutro.v1;
+
+option go_package = "github.com/Muxcore-Media/media-intro-outro/proto/gen/muxcore/introoutro/v1;introoutrov1";
+
+// IntroOutroService detects and stores intro/outro skip segments.
+service IntroOutroService {
+  rpc Detect(DetectRequest) returns (DetectResponse);
+  rpc GetSegments(GetSegmentsRequest) returns (GetSegmentsResponse);
+  rpc SetSegments(SetSegmentsRequest) returns (SetSegmentsResponse);
+  rpc DeleteSegments(DeleteSegmentsRequest) returns (DeleteSegmentsResponse);
+  rpc ListMedia(ListMediaRequest) returns (ListMediaResponse);
+}
+
+message Segment {
+  // kind: intro | outro | recap | credits
+  string kind = 1;
+  double start_seconds = 2;
+  double end_seconds = 3;
+  double confidence = 4;
+  string source = 5; // chapters | heuristic | manual | fingerprint
+}
+
+message DetectRequest {
+  string media_id = 1;
+  string path = 2;
+  double duration_seconds = 3;
+  repeated Chapter chapters = 4;
+  bool persist = 5;
+}
+
+message Chapter {
+  string title = 1;
+  double start_seconds = 2;
+  double end_seconds = 3;
+}
+
+message DetectResponse {
+  string media_id = 1;
+  repeated Segment segments = 2;
+}
+
+message GetSegmentsRequest { string media_id = 1; }
+message GetSegmentsResponse {
+  string media_id = 1;
+  repeated Segment segments = 2;
+}
+
+message SetSegmentsRequest {
+  string media_id = 1;
+  repeated Segment segments = 2;
+}
+message SetSegmentsResponse {
+  string media_id = 1;
+  repeated Segment segments = 2;
+}
+
+message DeleteSegmentsRequest { string media_id = 1; }
+message DeleteSegmentsResponse { bool success = 1; }
+
+message ListMediaRequest {}
+message ListMediaResponse { repeated string media_ids = 1; }
