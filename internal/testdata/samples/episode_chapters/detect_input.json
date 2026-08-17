@@ -1,0 +1,13 @@
+{
+  "media_id": "sample-ep-chapters",
+  "path": "testdata/samples/episode_chapters/sample.mkv",
+  "duration_seconds": 1400,
+  "intro_max_seconds": 180,
+  "outro_max_seconds": 240,
+  "chapters": [
+    {"title": "Opening Credits", "start_seconds": 0, "end_seconds": 90},
+    {"title": "Act One", "start_seconds": 90, "end_seconds": 700},
+    {"title": "Act Two", "start_seconds": 700, "end_seconds": 1280},
+    {"title": "Ending", "start_seconds": 1280, "end_seconds": 1400}
+  ]
+}

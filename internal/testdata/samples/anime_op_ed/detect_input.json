@@ -1,0 +1,12 @@
+{
+  "media_id": "sample-anime-op-ed",
+  "path": "testdata/samples/anime_op_ed/sample.mkv",
+  "duration_seconds": 1420,
+  "intro_max_seconds": 180,
+  "outro_max_seconds": 240,
+  "chapters": [
+    {"title": "OP Theme", "start_seconds": 0, "end_seconds": 90},
+    {"title": "Episode", "start_seconds": 90, "end_seconds": 1300},
+    {"title": "ED Theme", "start_seconds": 1300, "end_seconds": 1420}
+  ]
+}

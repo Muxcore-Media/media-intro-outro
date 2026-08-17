@@ -1,0 +1,8 @@
+{
+  "media_id": "sample-movie-heuristic",
+  "path": "testdata/samples/movie_heuristic/sample.mkv",
+  "duration_seconds": 7200,
+  "intro_max_seconds": 120,
+  "outro_max_seconds": 180,
+  "chapters": []
+}

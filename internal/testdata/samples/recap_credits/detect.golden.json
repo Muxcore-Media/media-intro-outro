@@ -1,0 +1,23 @@
+[
+  {
+    "kind": "recap",
+    "start_seconds": 0,
+    "end_seconds": 45,
+    "confidence": 0.9,
+    "source": "chapters"
+  },
+  {
+    "kind": "credits",
+    "start_seconds": 2000,
+    "end_seconds": 2100,
+    "confidence": 0.9,
+    "source": "chapters"
+  },
+  {
+    "kind": "intro",
+    "start_seconds": 0,
+    "end_seconds": 180,
+    "confidence": 0.35,
+    "source": "heuristic"
+  }
+]
