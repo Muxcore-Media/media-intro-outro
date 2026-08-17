@@ -11,6 +11,9 @@ service IntroOutroService {
   rpc SetSegments(SetSegmentsRequest) returns (SetSegmentsResponse);
   rpc DeleteSegments(DeleteSegmentsRequest) returns (DeleteSegmentsResponse);
   rpc ListMedia(ListMediaRequest) returns (ListMediaResponse);
+  // Skip returns a seek target when playback is inside a skippable segment.
+  // Player UI hooks are optional and can call this later.
+  rpc Skip(SkipRequest) returns (SkipResponse);
 }
 
 message Segment {
@@ -61,3 +64,16 @@ message DeleteSegmentsResponse { bool success = 1; }
 
 message ListMediaRequest {}
 message ListMediaResponse { repeated string media_ids = 1; }
+
+message SkipRequest {
+  string media_id = 1;
+  double position_seconds = 2;
+  // Optional kind filter: intro | outro | credits | recap. Empty = any skippable.
+  string kind = 3;
+}
+
+message SkipResponse {
+  bool can_skip = 1;
+  double seek_to_seconds = 2;
+  Segment segment = 3;
+}

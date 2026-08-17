@@ -1,0 +1,13 @@
+{
+  "media_id": "sample-recap-credits",
+  "path": "testdata/samples/recap_credits/sample.mkv",
+  "duration_seconds": 2100,
+  "intro_max_seconds": 180,
+  "outro_max_seconds": 240,
+  "chapters": [
+    {"title": "Previously On", "start_seconds": 0, "end_seconds": 45},
+    {"title": "Cold Open", "start_seconds": 45, "end_seconds": 120},
+    {"title": "Main Feature", "start_seconds": 120, "end_seconds": 2000},
+    {"title": "Closing Credits", "start_seconds": 2000, "end_seconds": 2100}
+  ]
+}

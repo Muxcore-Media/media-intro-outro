@@ -69,9 +69,9 @@ func NewModule(cfg Config) *Module {
 
 func (m *Module) Info() contracts.ModuleInfo {
 	return contracts.ModuleInfo{
-		ID: m.id, Name: "Intro / Outro Detection", Version: "0.1.0",
+		ID: m.id, Name: "Intro / Outro Detection", Version: "0.2.0",
 		Roles:        []string{"media", "analysis"},
-		Description:  "Intro/outro skip segment detection (scaffold)",
+		Description:  "Intro/outro skip segment detection",
 		Capabilities: []string{"media.intro_outro", "intro_outro", "settings"},
 		HTTPAddr:     m.grpcAddr,
 	}
@@ -177,6 +177,21 @@ func (s *ioServer) DeleteSegments(_ context.Context, req *iov1.DeleteSegmentsReq
 
 func (s *ioServer) ListMedia(_ context.Context, _ *iov1.ListMediaRequest) (*iov1.ListMediaResponse, error) {
 	return &iov1.ListMediaResponse{MediaIds: s.m.store.ListMedia()}, nil
+}
+
+func (s *ioServer) Skip(_ context.Context, req *iov1.SkipRequest) (*iov1.SkipResponse, error) {
+	res, err := s.m.store.SkipForMedia(req.GetMediaId(), req.GetPositionSeconds(), req.GetKind())
+	if err != nil {
+		return nil, err
+	}
+	out := &iov1.SkipResponse{CanSkip: res.CanSkip, SeekToSeconds: res.SeekToSeconds}
+	if res.Segment != nil {
+		out.Segment = &iov1.Segment{
+			Kind: res.Segment.Kind, StartSeconds: res.Segment.StartSeconds, EndSeconds: res.Segment.EndSeconds,
+			Confidence: res.Segment.Confidence, Source: res.Segment.Source,
+		}
+	}
+	return out, nil
 }
 
 func toPBSegs(in []Segment) []*iov1.Segment {

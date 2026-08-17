@@ -2,10 +2,12 @@
 
 Intro and outro skip-segment detection for MuxCore.
 
-Exposes `muxcore.introoutro.v1.IntroOutroService` in **v0.1.0**:
+Exposes `muxcore.introoutro.v1.IntroOutroService` in **v0.2.0**:
 - Chapter-title classification (`intro` / `outro` / `credits` / `recap`)
 - Duration heuristics when chapters are absent
+- `Skip` RPC for player seek hints (optional UI hook later)
 - In-memory segment store + SettingsProvider
+- Offline golden fixtures under `internal/testdata/samples`
 
 ## Ports
 
@@ -16,4 +18,4 @@ Exposes `muxcore.introoutro.v1.IntroOutroService` in **v0.1.0**:
 
 ## Status
 
-Scaffold — audio fingerprint matching (Chromaprint / series clustering) and playback client integration are follow-ups.
+Chapter + heuristic detection with golden fixtures and a `Skip` API for players. Audio fingerprint matching (Chromaprint / series clustering) remains a follow-up.

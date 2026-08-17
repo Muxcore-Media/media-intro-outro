@@ -1,0 +1,8 @@
+{
+  "media_id": "sample-short-clip",
+  "path": "testdata/samples/short_clip/sample.mkv",
+  "duration_seconds": 60,
+  "intro_max_seconds": 180,
+  "outro_max_seconds": 240,
+  "chapters": []
+}

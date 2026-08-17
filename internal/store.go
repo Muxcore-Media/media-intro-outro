@@ -7,17 +7,17 @@ import (
 )
 
 type Segment struct {
-	Kind         string
-	StartSeconds float64
-	EndSeconds   float64
-	Confidence   float64
-	Source       string
+	Kind         string  `json:"kind"`
+	StartSeconds float64 `json:"start_seconds"`
+	EndSeconds   float64 `json:"end_seconds"`
+	Confidence   float64 `json:"confidence"`
+	Source       string  `json:"source"`
 }
 
 type Chapter struct {
-	Title        string
-	StartSeconds float64
-	EndSeconds   float64
+	Title        string  `json:"title"`
+	StartSeconds float64 `json:"start_seconds"`
+	EndSeconds   float64 `json:"end_seconds"`
 }
 
 type DetectInput struct {
@@ -138,6 +138,9 @@ func Detect(in DetectInput) ([]Segment, error) {
 			Confidence: 0.35, Source: "heuristic",
 		})
 	}
+	if out == nil {
+		out = []Segment{}
+	}
 	return out, nil
 }
 
@@ -155,4 +158,55 @@ func classifyChapter(title string) string {
 	default:
 		return ""
 	}
+}
+
+// SkipResult is the player-facing seek hint for a playback position.
+type SkipResult struct {
+	CanSkip       bool
+	SeekToSeconds float64
+	Segment       *Segment
+}
+
+func isSkippableKind(kind string) bool {
+	switch strings.ToLower(strings.TrimSpace(kind)) {
+	case "intro", "outro", "credits", "recap":
+		return true
+	default:
+		return false
+	}
+}
+
+// Skip finds a skippable segment containing positionSeconds.
+// kindFilter is optional (intro|outro|credits|recap); empty matches any skippable kind.
+func Skip(segs []Segment, positionSeconds float64, kindFilter string) SkipResult {
+	want := strings.ToLower(strings.TrimSpace(kindFilter))
+	var best *Segment
+	for i := range segs {
+		seg := &segs[i]
+		if !isSkippableKind(seg.Kind) {
+			continue
+		}
+		if want != "" && strings.ToLower(seg.Kind) != want {
+			continue
+		}
+		if positionSeconds < seg.StartSeconds || positionSeconds >= seg.EndSeconds {
+			continue
+		}
+		if best == nil || seg.EndSeconds < best.EndSeconds {
+			best = seg
+		}
+	}
+	if best == nil {
+		return SkipResult{}
+	}
+	cp := *best
+	return SkipResult{CanSkip: true, SeekToSeconds: best.EndSeconds, Segment: &cp}
+}
+
+// SkipForMedia looks up stored segments and returns a skip hint for positionSeconds.
+func (s *Store) SkipForMedia(mediaID string, positionSeconds float64, kindFilter string) (SkipResult, error) {
+	if strings.TrimSpace(mediaID) == "" {
+		return SkipResult{}, fmt.Errorf("media_id required")
+	}
+	return Skip(s.Get(mediaID), positionSeconds, kindFilter), nil
 }
