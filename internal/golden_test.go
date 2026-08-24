@@ -14,11 +14,11 @@ import (
 var updateGoldens = flag.Bool("update-goldens", false, "rewrite detect.golden.json fixtures")
 
 type detectFixture struct {
-	MediaID         string            `json:"media_id"`
-	Path            string            `json:"path"`
-	DurationSeconds float64           `json:"duration_seconds"`
-	IntroMaxSeconds float64           `json:"intro_max_seconds"`
-	OutroMaxSeconds float64           `json:"outro_max_seconds"`
+	MediaID         string             `json:"media_id"`
+	Path            string             `json:"path"`
+	DurationSeconds float64            `json:"duration_seconds"`
+	IntroMaxSeconds float64            `json:"intro_max_seconds"`
+	OutroMaxSeconds float64            `json:"outro_max_seconds"`
 	Chapters        []internal.Chapter `json:"chapters"`
 }
 

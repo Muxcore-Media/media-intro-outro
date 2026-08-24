@@ -9,6 +9,7 @@ import (
 	"os"
 	"strconv"
 	"sync"
+	"time"
 
 	"google.golang.org/grpc"
 
@@ -18,13 +19,16 @@ import (
 )
 
 type Module struct {
-	id, grpcAddr, httpAddr string
-	introMax, outroMax     float64
-	cfgMu                  sync.RWMutex
-	store                  *Store
-	grpcSrv                *grpc.Server
-	lis                    net.Listener
-	httpSrv                *http.Server
+	lis      net.Listener
+	store    *Store
+	grpcSrv  *grpc.Server
+	httpSrv  *http.Server
+	id       string
+	grpcAddr string
+	httpAddr string
+	introMax float64
+	outroMax float64
+	cfgMu    sync.RWMutex
 }
 
 type Config struct {
@@ -80,7 +84,8 @@ func (m *Module) Info() contracts.ModuleInfo {
 func (m *Module) Init(ctx context.Context) error { return nil }
 
 func (m *Module) Start(ctx context.Context) error {
-	lis, err := net.Listen("tcp", m.grpcAddr)
+	var lc net.ListenConfig
+	lis, err := lc.Listen(ctx, "tcp", m.grpcAddr)
 	if err != nil {
 		return fmt.Errorf("listen gRPC %s: %w", m.grpcAddr, err)
 	}
@@ -99,7 +104,11 @@ func (m *Module) Start(ctx context.Context) error {
 		w.WriteHeader(http.StatusOK)
 		_, _ = w.Write([]byte("ok"))
 	})
-	m.httpSrv = &http.Server{Addr: m.httpAddr, Handler: mux}
+	m.httpSrv = &http.Server{
+		Addr:              m.httpAddr,
+		Handler:           mux,
+		ReadHeaderTimeout: 10 * time.Second,
+	}
 	go func() {
 		slog.Info("health listening", "addr", m.httpAddr)
 		if err := m.httpSrv.ListenAndServe(); err != nil && err != http.ErrServerClosed {

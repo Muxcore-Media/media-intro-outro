@@ -1,16 +1,16 @@
 [
   {
     "kind": "intro",
+    "source": "chapters",
     "start_seconds": 0,
     "end_seconds": 90,
-    "confidence": 0.9,
-    "source": "chapters"
+    "confidence": 0.9
   },
   {
     "kind": "outro",
+    "source": "chapters",
     "start_seconds": 1280,
     "end_seconds": 1400,
-    "confidence": 0.9,
-    "source": "chapters"
+    "confidence": 0.9
   }
 ]
