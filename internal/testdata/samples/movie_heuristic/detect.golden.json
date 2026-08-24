@@ -1,16 +1,16 @@
 [
   {
     "kind": "intro",
+    "source": "heuristic",
     "start_seconds": 0,
     "end_seconds": 120,
-    "confidence": 0.35,
-    "source": "heuristic"
+    "confidence": 0.35
   },
   {
     "kind": "outro",
+    "source": "heuristic",
     "start_seconds": 7020,
     "end_seconds": 7200,
-    "confidence": 0.35,
-    "source": "heuristic"
+    "confidence": 0.35
   }
 ]
