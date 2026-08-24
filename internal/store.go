@@ -8,10 +8,10 @@ import (
 
 type Segment struct {
 	Kind         string  `json:"kind"`
+	Source       string  `json:"source"`
 	StartSeconds float64 `json:"start_seconds"`
 	EndSeconds   float64 `json:"end_seconds"`
 	Confidence   float64 `json:"confidence"`
-	Source       string  `json:"source"`
 }
 
 type Chapter struct {
@@ -21,17 +21,17 @@ type Chapter struct {
 }
 
 type DetectInput struct {
-	MediaID          string
-	Path             string
-	DurationSeconds  float64
-	Chapters         []Chapter
-	IntroMaxSeconds  float64
-	OutroMaxSeconds  float64
+	MediaID         string
+	Path            string
+	Chapters        []Chapter
+	DurationSeconds float64
+	IntroMaxSeconds float64
+	OutroMaxSeconds float64
 }
 
 type Store struct {
-	mu   sync.RWMutex
 	byID map[string][]Segment
+	mu   sync.RWMutex
 }
 
 func NewStore() *Store {
@@ -162,9 +162,9 @@ func classifyChapter(title string) string {
 
 // SkipResult is the player-facing seek hint for a playback position.
 type SkipResult struct {
-	CanSkip       bool
-	SeekToSeconds float64
 	Segment       *Segment
+	SeekToSeconds float64
+	CanSkip       bool
 }
 
 func isSkippableKind(kind string) bool {
@@ -186,7 +186,7 @@ func Skip(segs []Segment, positionSeconds float64, kindFilter string) SkipResult
 		if !isSkippableKind(seg.Kind) {
 			continue
 		}
-		if want != "" && strings.ToLower(seg.Kind) != want {
+		if want != "" && !strings.EqualFold(seg.Kind, want) {
 			continue
 		}
 		if positionSeconds < seg.StartSeconds || positionSeconds >= seg.EndSeconds {
