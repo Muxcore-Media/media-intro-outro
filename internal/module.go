@@ -19,21 +19,25 @@ import (
 )
 
 type Module struct {
-	lis      net.Listener
-	store    *Store
-	grpcSrv  *grpc.Server
-	httpSrv  *http.Server
-	id       string
-	grpcAddr string
-	httpAddr string
-	introMax float64
-	outroMax float64
-	cfgMu    sync.RWMutex
+	lis              net.Listener
+	store            *Store
+	grpcSrv          *grpc.Server
+	httpSrv          *http.Server
+	id               string
+	grpcAddr         string
+	httpAddr         string
+	introMax         float64
+	outroMax         float64
+	heuristicEnabled bool
+	minConfidence    float64
+	cfgMu            sync.RWMutex
 }
 
 type Config struct {
 	ID, GRPCAddr, HTTPAddr string
 	IntroMax, OutroMax     float64
+	HeuristicEnabled       bool
+	MinConfidence          float64
 }
 
 func NewModule(cfg Config) *Module {
@@ -52,22 +56,42 @@ func NewModule(cfg Config) *Module {
 	if cfg.OutroMax <= 0 {
 		cfg.OutroMax = 240
 	}
+	if cfg.MinConfidence <= 0 {
+		cfg.MinConfidence = 0.5
+	}
+	cfg.HeuristicEnabled = true
+
 	if v := os.Getenv("INTRO_MAX_SECONDS"); v != "" {
-		if f, err := strconv.ParseFloat(v, 64); err == nil {
+		f, err := strconv.ParseFloat(v, 64)
+		switch {
+		case err != nil:
+			slog.Warn("invalid INTRO_MAX_SECONDS, using default", "value", v, "error", err)
+		case f <= 0:
+			slog.Warn("invalid INTRO_MAX_SECONDS, using default", "value", v)
+		default:
 			cfg.IntroMax = f
 		}
 	}
 	if v := os.Getenv("OUTRO_MAX_SECONDS"); v != "" {
-		if f, err := strconv.ParseFloat(v, 64); err == nil {
+		f, err := strconv.ParseFloat(v, 64)
+		switch {
+		case err != nil:
+			slog.Warn("invalid OUTRO_MAX_SECONDS, using default", "value", v, "error", err)
+		case f <= 0:
+			slog.Warn("invalid OUTRO_MAX_SECONDS, using default", "value", v)
+		default:
 			cfg.OutroMax = f
 		}
 	}
 	if v := os.Getenv("MUXCORE_HTTP_ADDR"); v != "" {
 		cfg.HTTPAddr = v
 	}
+	dataDir := os.Getenv("INTRO_OUTRO_DATA_DIR")
 	return &Module{
 		id: cfg.ID, grpcAddr: cfg.GRPCAddr, httpAddr: cfg.HTTPAddr,
-		introMax: cfg.IntroMax, outroMax: cfg.OutroMax, store: NewStore(),
+		introMax: cfg.IntroMax, outroMax: cfg.OutroMax,
+		heuristicEnabled: cfg.HeuristicEnabled, minConfidence: cfg.MinConfidence,
+		store: NewStore(dataDir),
 	}
 }
 
@@ -81,7 +105,21 @@ func (m *Module) Info() contracts.ModuleInfo {
 	}
 }
 
-func (m *Module) Init(ctx context.Context) error { return nil }
+func (m *Module) Init(ctx context.Context) error {
+	if m.store.dataDir == "" {
+		return nil
+	}
+	if err := os.MkdirAll(m.store.dataDir, 0o700); err != nil {
+		return fmt.Errorf("data dir: %w", err)
+	}
+	if err := m.store.Load(); err != nil {
+		return fmt.Errorf("load segments: %w", err)
+	}
+	if err := m.loadSettings(); err != nil {
+		return fmt.Errorf("load settings: %w", err)
+	}
+	return nil
+}
 
 func (m *Module) Start(ctx context.Context) error {
 	var lc net.ListenConfig
@@ -135,9 +173,10 @@ type ioServer struct {
 	m *Module
 }
 
-func (s *ioServer) Detect(_ context.Context, req *iov1.DetectRequest) (*iov1.DetectResponse, error) {
+func (s *ioServer) detectInput(req *iov1.DetectRequest) DetectInput {
 	s.m.cfgMu.RLock()
 	introMax, outroMax := s.m.introMax, s.m.outroMax
+	heuristicEnabled, minConf := s.m.heuristicEnabled, s.m.minConfidence
 	s.m.cfgMu.RUnlock()
 	chapters := make([]Chapter, 0, len(req.GetChapters()))
 	for _, c := range req.GetChapters() {
@@ -145,10 +184,15 @@ func (s *ioServer) Detect(_ context.Context, req *iov1.DetectRequest) (*iov1.Det
 			Title: c.GetTitle(), StartSeconds: c.GetStartSeconds(), EndSeconds: c.GetEndSeconds(),
 		})
 	}
-	segs, err := Detect(DetectInput{
+	return DetectInput{
 		MediaID: req.GetMediaId(), Path: req.GetPath(), DurationSeconds: req.GetDurationSeconds(),
 		Chapters: chapters, IntroMaxSeconds: introMax, OutroMaxSeconds: outroMax,
-	})
+		HeuristicEnabled: heuristicEnabled, MinConfidence: minConf,
+	}
+}
+
+func (s *ioServer) Detect(_ context.Context, req *iov1.DetectRequest) (*iov1.DetectResponse, error) {
+	segs, err := s.m.store.Detect(s.detectInput(req))
 	if err != nil {
 		return nil, err
 	}
@@ -170,6 +214,9 @@ func (s *ioServer) SetSegments(_ context.Context, req *iov1.SetSegmentsRequest) 
 		if segs[i].Source == "" {
 			segs[i].Source = "manual"
 		}
+	}
+	if err := validateSegments(segs); err != nil {
+		return nil, err
 	}
 	if err := s.m.store.Set(req.GetMediaId(), segs); err != nil {
 		return nil, err

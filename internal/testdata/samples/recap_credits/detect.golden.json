@@ -12,12 +12,5 @@
     "start_seconds": 2000,
     "end_seconds": 2100,
     "confidence": 0.9
-  },
-  {
-    "kind": "intro",
-    "source": "heuristic",
-    "start_seconds": 0,
-    "end_seconds": 180,
-    "confidence": 0.35
   }
 ]

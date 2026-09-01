@@ -8,7 +8,7 @@ MuxCore sidecar module (`media-intro-outro`). Workspace deploy and SSH: [`../AGE
 |-------|-------|
 | Directory | `media-intro-outro` |
 | Capabilities | see muxcore.json |
-| Contracts | none declared |
+| Contracts | `proto/muxcore/introoutro/v1` (`IntroOutroService`) |
 
 ## Agent rules
 

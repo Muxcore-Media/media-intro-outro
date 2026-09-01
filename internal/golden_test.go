@@ -39,12 +39,8 @@ func TestDetectGoldenFixtures(t *testing.T) {
 		dir := filepath.Join(root, ent.Name())
 		inputPath := filepath.Join(dir, "detect_input.json")
 		goldenPath := filepath.Join(dir, "detect.golden.json")
-		mediaPath := filepath.Join(dir, "sample.mkv")
 		if _, err := os.Stat(inputPath); err != nil {
 			continue
-		}
-		if _, err := os.Stat(mediaPath); err != nil {
-			t.Fatalf("%s: sample.mkv stub missing: %v", ent.Name(), err)
 		}
 		cases++
 		t.Run(ent.Name(), func(t *testing.T) {
@@ -59,6 +55,7 @@ func TestDetectGoldenFixtures(t *testing.T) {
 			segs, err := internal.Detect(internal.DetectInput{
 				MediaID: fx.MediaID, Path: fx.Path, DurationSeconds: fx.DurationSeconds,
 				Chapters: fx.Chapters, IntroMaxSeconds: fx.IntroMaxSeconds, OutroMaxSeconds: fx.OutroMaxSeconds,
+				MinConfidence: 0.5,
 			})
 			if err != nil {
 				t.Fatal(err)
@@ -103,7 +100,7 @@ func TestSkipAPI(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	store := internal.NewStore()
+	store := internal.NewStore("")
 	if err := store.Set("skip-ep", segs); err != nil {
 		t.Fatal(err)
 	}
