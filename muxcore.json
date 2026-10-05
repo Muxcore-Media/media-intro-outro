@@ -1,7 +1,7 @@
 {
   "id": "media-intro-outro",
   "name": "Intro / Outro Detection",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "Intro/outro skip segment detection with chapter heuristics and Skip API",
   "roles": [
     "media",
