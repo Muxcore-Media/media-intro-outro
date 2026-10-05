@@ -11,6 +11,8 @@ import (
 	"sync"
 	"time"
 
+	manifest "github.com/Muxcore-Media/media-intro-outro"
+
 	"google.golang.org/grpc"
 
 	"github.com/Muxcore-Media/core/pkg/contracts"
@@ -97,7 +99,7 @@ func NewModule(cfg Config) *Module {
 
 func (m *Module) Info() contracts.ModuleInfo {
 	return contracts.ModuleInfo{
-		ID: m.id, Name: "Intro / Outro Detection", Version: "0.2.0",
+		ID: m.id, Name: "Intro / Outro Detection", Version: modulesdk.ManifestVersion(manifest.ManifestJSON),
 		Roles:        []string{"media", "analysis"},
 		Description:  "Intro/outro skip segment detection",
 		Capabilities: []string{"media.intro_outro", "intro_outro", "settings"},
