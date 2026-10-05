@@ -17,6 +17,7 @@ import (
 
 	"github.com/Muxcore-Media/core/pkg/contracts"
 	modulesdk "github.com/Muxcore-Media/core/sdk/go/module"
+	"github.com/Muxcore-Media/core/sdk/go/module/meshtls"
 	iov1 "github.com/Muxcore-Media/media-intro-outro/proto/gen/muxcore/introoutro/v1"
 )
 
@@ -130,7 +131,11 @@ func (m *Module) Start(ctx context.Context) error {
 		return fmt.Errorf("listen gRPC %s: %w", m.grpcAddr, err)
 	}
 	m.lis = lis
-	m.grpcSrv = grpc.NewServer()
+	srvOpt, err := meshtls.ServerOption()
+	if err != nil {
+		return fmt.Errorf("grpc mesh TLS: %w", err)
+	}
+	m.grpcSrv = grpc.NewServer(srvOpt)
 	iov1.RegisterIntroOutroServiceServer(m.grpcSrv, &ioServer{m: m})
 	modulesdk.RegisterSettings(m.grpcSrv, m.id, m)
 	go func() {
